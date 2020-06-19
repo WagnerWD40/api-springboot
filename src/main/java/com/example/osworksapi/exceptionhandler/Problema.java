@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(Include.NON_NULL)
 public class Problema {
     
     private Integer status;
@@ -43,7 +47,7 @@ public class Problema {
     public Problema() {
     }
 
-    public Problema(Integer status, LocalDateTime dataHora, String titulo, ArrayList campos) {
+    public Problema(Integer status, LocalDateTime dataHora, String titulo, ArrayList<Campo> campos) {
         this.status = status;
         this.dataHora = dataHora;
         this.titulo = titulo;
