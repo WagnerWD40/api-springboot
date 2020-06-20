@@ -1,8 +1,9 @@
 package com.example.osworksapi.exceptionhandler;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 
+import com.example.osworksapi.exception.EntidadeNaoEncontradaException;
 import com.example.osworksapi.exception.NegocioException;
 
 import org.springframework.http.HttpHeaders;
@@ -18,7 +19,20 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
-    
+
+    @ExceptionHandler(EntidadeNaoEncontradaException.class)
+    public ResponseEntity<Object> handleNegocio(EntidadeNaoEncontradaException ex, WebRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        Problema problema = new Problema();
+
+        problema.setStatus(status.value());
+        problema.setTitulo(ex.getMessage());
+        problema.setDataHora(OffsetDateTime.now());
+
+        return handleExceptionInternal(ex, problema, new HttpHeaders(), status, request);
+    }    
+
     @ExceptionHandler(NegocioException.class)
     public ResponseEntity<Object> handleNegocio(NegocioException ex, WebRequest request) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
@@ -27,11 +41,10 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
         problema.setStatus(status.value());
         problema.setTitulo(ex.getMessage());
-        problema.setDataHora(LocalDateTime.now());
+        problema.setDataHora(OffsetDateTime.now());
 
         return handleExceptionInternal(ex, problema, new HttpHeaders(), status, request);
     }
-
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
@@ -48,7 +61,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
             Problema problema = new Problema(
                 status.value(),
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 "Um ou mais campos estão inválidos."
                 + "Faça o preenchimento correto e tente novamente.",
                 campos

@@ -1,7 +1,9 @@
 package com.example.osworksapi.Model;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.Entity;
@@ -11,11 +13,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.example.osworksapi.exception.NegocioException;
 
 @Entity
 public class OrdemServico {
@@ -24,7 +26,6 @@ public class OrdemServico {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     @ManyToOne
     private Cliente cliente;
 
@@ -34,15 +35,14 @@ public class OrdemServico {
     @NotNull
     private BigDecimal preco;
 
-    @JsonProperty(access = Access.READ_ONLY)
     @Enumerated(EnumType.STRING)
     private StatusOrdemServico status;
 
-    @JsonProperty(access = Access.READ_ONLY)
-    private LocalDateTime dataAbertura;
+    private OffsetDateTime dataAbertura;
+    private OffsetDateTime dataFinalizacao;
 
-    @JsonProperty(access = Access.READ_ONLY)
-    private LocalDateTime dataFinalizacao;
+    @OneToMany(mappedBy = "ordemServico")
+    private List<Comentario> comentarios = new ArrayList<Comentario>();
 
     public Long getId() {
         return this.id;
@@ -84,8 +84,16 @@ public class OrdemServico {
         this.status = status;
     }
 
-    public LocalDateTime getDataAbertura() {
+    public OffsetDateTime getDataAbertura() {
         return this.dataAbertura;
+    }
+
+    public List<Comentario> getComentarios() {
+        return this.comentarios;
+    }
+
+    public void setComentarios(List<Comentario> comentarios) {
+        this.comentarios = comentarios;
     }
 
     @Override
@@ -104,17 +112,28 @@ public class OrdemServico {
         return Objects.hashCode(id);
     }
 
-    public void setDataAbertura(LocalDateTime dataAbertura) {
+    public void setDataAbertura(OffsetDateTime dataAbertura) {
         this.dataAbertura = dataAbertura;
     }
 
-    public LocalDateTime getDataFinalização() {
+    public OffsetDateTime getDataFinalização() {
         return this.dataFinalizacao;
     }
 
-    public void setDataFinalização(LocalDateTime dataFinalização) {
+    public void setDataFinalização(OffsetDateTime dataFinalização) {
         this.dataFinalizacao = dataFinalização;
     }
 
-
+	public void finalizar() {
+        if (naoPodeSerFinalizada()) {
+            throw new NegocioException("Ordem de serviço não pode ser finalizada");
+        }
+        
+        setStatus(StatusOrdemServico.FINALIZADA);
+        setDataFinalização(OffsetDateTime.now());
+    }
+    
+    private boolean naoPodeSerFinalizada() {
+        return !StatusOrdemServico.ABERTA.equals(getStatus());
+    }
 }

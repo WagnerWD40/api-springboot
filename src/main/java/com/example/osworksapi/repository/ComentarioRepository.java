@@ -1,0 +1,9 @@
+package com.example.osworksapi.repository;
+
+import com.example.osworksapi.Model.Comentario;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ComentarioRepository extends JpaRepository<Comentario, Long> {
+
+}
